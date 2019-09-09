@@ -1,25 +1,90 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+title: "PA1_template"
+author: "debocorne"
+date: "9 de septiembre de 2019"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
-## Loading and preprocessing the data
+## R Markdown
 
+* Code for reading in the dataset and/or processing the data
 
+```{r }
+if (!file.exists("data/repdata_data_activity")) {
+        # download the data
+        fileURL <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+        zipfile="data/repdata_data_activity.zip"
+        message("Downloading data")
+        download.file(fileURL, destfile=zipfile, method="curl")
+        unzip(zipfile, exdir="data/repdata_data_activity")
+}
 
-## What is mean total number of steps taken per day?
+# Read in the data 
 
+test.data <- read.csv( 'data/repdata_data_activity/activity.csv', header = TRUE, sep = ",")
+```
 
+ * Histogram of the total number of steps taken each day
+ 
+```{r }
+aggTotals <- aggregate(steps ~ date,test.data, sum,na.rm=TRUE)
+hist(aggTotals$steps, xlab = "", col="Red", main = "Activity", font=3)
 
-## What is the average daily activity pattern?
+```
 
+* Mean and median number of steps taken each day
 
+```{r }
+mean(aggTotals$steps)
+median(aggTotals$steps)
+```
 
-## Imputing missing values
+* Time series plot of the average number of steps taken
 
+```{r }
 
+aggInterval <- aggregate(steps ~ interval,test.data, mean,na.rm=TRUE)
+plot(aggInterval$steps, xlab = "", col="Red", main = "Activity steps by interval", font=3)
+```
 
-## Are there differences in activity patterns between weekdays and weekends?
+* The 5-minute interval that, on average, contains the maximum number of steps
+
+```{r }
+stepsInterval <- aggregate(steps ~ interval, test.data, mean)
+plot(stepsInterval$interval, stepsInterval$steps, type="l", xlab = "5 min - interval", ylab = "Average steps", main = "Average Daily Activity Pattern", col = "green")
+```
+
+* Code to describe and show a strategy for imputing missing data
+
+```{r }
+navalue<-test.data
+navalue[is.na(navalue$steps),"steps"]<-0
+```
+
+* Histogram of the total number of steps taken each day after missing values are imputed
+
+```{r }
+aggStepsDate <- aggregate(steps ~ date,navalue, sum)
+hist(aggStepsDate$steps, xlab = "", col="Red", main = "Steps per day non NAs", font=3,breaks = 8)
+
+```
+
+* Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
+
+```{r }
+
+aggStepsDate <- aggregate(steps ~ date,navalue, sum)
+
+#png(file = "3.png", width = 480, height = 480)
+hist(aggStepsDate$steps, xlab = "", col="Red", main = "Steps per day non NAs", font=3,breaks = 8)
+
+mean(aggStepsDate$steps)
+
+```
